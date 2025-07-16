@@ -1,0 +1,8 @@
+com\example\lembretemedicamentos\repository\UsuarioRepository.class
+com\example\lembretemedicamentos\model\Medicamento.class
+com\example\lembretemedicamentos\LembreteMedicamentosApplication.class
+com\example\lembretemedicamentos\model\Usuario.class
+com\example\lembretemedicamentos\controller\MedicamentoController.class
+com\example\lembretemedicamentos\controller\UsuarioController.class
+com\example\lembretemedicamentos\repository\MedicamentoRepository.class
+com\example\lembretemedicamentos\service\MedicamentoService.class

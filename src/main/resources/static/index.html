@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Medicamentos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style> body { font-family: 'Inter', sans-serif; } </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- TELA DE LOGIN -->
+    <div id="login-page" class="flex items-center justify-center h-screen bg-gray-200">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm">
+            <h2 class="text-2xl font-bold text-center text-emerald-600 mb-6">Selecionar Perfil</h2>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="user-select" class="block text-sm font-medium text-gray-700 mb-1">Escolha seu usuário</label>
+                    <select id="user-select" class="w-full px-3 py-2 border rounded-md"></select>
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 text-white py-2 rounded-md hover:bg-emerald-700">Entrar</button>
+            </form>
+            <p class="text-center text-sm text-gray-600 mt-4">
+                Não tem um perfil? <a href="#" id="show-register-link" class="font-medium text-emerald-600 hover:underline">Crie um agora</a>
+            </p>
+        </div>
+    </div>
+    
+    <!-- TELA DE REGISTRO -->
+    <div id="register-page" class="hidden flex items-center justify-center h-screen bg-gray-200">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm">
+            <h2 class="text-2xl font-bold text-center text-emerald-600 mb-6">Criar Novo Perfil</h2>
+            <form id="register-form">
+                <div class="mb-4">
+                    <label for="register-username" class="block text-sm font-medium text-gray-700 mb-1">Nome de Usuário</label>
+                    <input type="text" id="register-username" class="w-full px-3 py-2 border rounded-md" required>
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 text-white py-2 rounded-md hover:bg-emerald-700">Registrar</button>
+            </form>
+            <p class="text-center text-sm text-gray-600 mt-4">
+                Já tem um perfil? <a href="#" id="show-login-link" class="font-medium text-emerald-600 hover:underline">Selecione aqui</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div id="app-container" class="hidden">
+        <header class="bg-white shadow-md">
+            <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+                <div class="text-xl font-bold text-emerald-600">Controle de Medicamentos</div>
+                <div>
+                    <span class="text-sm text-gray-600 mr-4">Usuário: <strong id="logged-in-user-name"></strong></span>
+                    <button data-page="management-page" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Gerenciar</button>
+                    <button data-page="dashboard-page" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Dashboard</button>
+                    <button id="logout-button" class="ml-4 px-3 py-2 rounded-md text-sm text-red-500 hover:bg-red-100"><i class="fas fa-sign-out-alt"></i> Trocar Perfil</button>
+                </div>
+            </nav>
+        </header>
+        <main class="container mx-auto p-4 md:p-8">
+            <div id="management-page" class="hidden">
+                <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                    <h2 class="text-2xl font-semibold mb-4" id="form-title">Adicionar Compra de Medicamento</h2>
+                    <form id="medicamento-form">
+                        <input type="hidden" id="medicamento-id">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label for="nome" class="block text-sm">Nome</label><input type="text" id="nome" class="w-full mt-1 px-3 py-2 border rounded-md" required></div>
+                            <div><label for="laboratorio" class="block text-sm">Laboratório</label><input type="text" id="laboratorio" class="w-full mt-1 px-3 py-2 border rounded-md"></div>
+                            <div><label for="dosagem" class="block text-sm">Dosagem</label><input type="text" id="dosagem" class="w-full mt-1 px-3 py-2 border rounded-md"></div>
+                            <div><label for="dataCompra" class="block text-sm">Data da Compra</label><input type="date" id="dataCompra" class="w-full mt-1 px-3 py-2 border rounded-md"></div>
+                            <div><label for="numeroCaixas" class="block text-sm">Nº de Caixas</label><input type="number" id="numeroCaixas" class="w-full mt-1 px-3 py-2 border rounded-md"></div>
+                            <div><label for="valorCaixa" class="block text-sm">Valor por Caixa (R$)</label><input type="number" id="valorCaixa" step="0.01" class="w-full mt-1 px-3 py-2 border rounded-md"></div>
+                            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label for="tipoTratamento" class="block text-sm">Tipo de Tratamento</label><select id="tipoTratamento" class="w-full mt-1 px-3 py-2 border rounded-md"><option value="Uso Contínuo">Uso Contínuo</option><option value="Duração Definida">Tratamento com Duração Definida</option><option value="Se Necessário">Se Necessário / Sintomático</option></select></div>
+                                <div id="dias-tratamento-container" class="hidden"><label for="diasTratamento" class="block text-sm">Por quantos dias?</label><input type="number" id="diasTratamento" class="w-full mt-1 px-3 py-2 border rounded-md"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end space-x-4 mt-4"><button type="button" id="cancel-button" class="hidden px-4 py-2 bg-gray-300 rounded-md">Cancelar</button><button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"><i class="fas fa-save mr-2"></i>Salvar</button></div>
+                    </form>
+                </div>
+                <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 p-4 rounded-md mb-8" role="alert"><p class="font-bold">Consulta Pública de Medicamentos</p><p>Para verificar se um medicamento faz parte da lista do SUS (Rename), consulte o portal oficial do governo.</p><a href="https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/r/rename" target="_blank" class="inline-block mt-2 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">Acessar Portal da Saúde <i class="fas fa-external-link-alt ml-2"></i></a></div>
+                <div class="bg-white p-6 rounded-lg shadow-md mb-8 text-center"><h2 class="text-xl font-semibold">Custo Total dos Medicamentos</h2><p id="custo-total" class="text-3xl font-bold text-green-600 mt-2">R$ 0,00</p></div>
+                <div id="medicamentos-lista" class="space-y-4"></div>
+            </div>
+            <div id="dashboard-page" class="hidden">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold mb-4">Dashboard de Gastos</h2>
+                    <div id="dashboard-filters" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-4 border rounded-md bg-gray-50">
+                        <div>
+                            <label for="filtro-nome" class="text-sm font-medium">Nome</label>
+                            <select id="filtro-nome" class="w-full mt-1 px-3 py-2 border rounded-md text-sm">
+                                <option value="">Todos</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="filtro-laboratorio" class="text-sm font-medium">Laboratório</label>
+                            <select id="filtro-laboratorio" class="w-full mt-1 px-3 py-2 border rounded-md text-sm">
+                                <option value="">Todos</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="filtro-tipo" class="text-sm font-medium">Tipo de Tratamento</label>
+                            <select id="filtro-tipo" class="w-full mt-1 px-3 py-2 border rounded-md text-sm">
+                                <option value="">Todos</option>
+                                <option value="Uso Contínuo">Uso Contínuo</option>
+                                <option value="Duração Definida">Duração Definida</option>
+                                <option value="Se Necessário">Se Necessário</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="filtrar-btn" class="w-full bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700"><i class="fas fa-filter mr-2"></i>Filtrar</button>
+                        </div>
+                    </div>
+                    <div style="height: 400px;"><canvas id="gastosChart"></canvas></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div id="delete-modal-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+    <div id="delete-modal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-xl z-50">
+        <h3 class="text-lg font-bold mb-4">Confirmar Exclusão</h3>
+        <p>Deseja excluir este registro de compra?</p>
+        <div class="mt-6 flex justify-end space-x-4"><button id="cancel-delete" class="px-4 py-2 bg-gray-300 rounded-md">Cancelar</button><button id="confirm-delete" class="px-4 py-2 bg-red-600 text-white rounded-md">Excluir</button></div>
+    </div>
+
+<script>
+// --- CONFIGURAÇÃO GLOBAL ---
+const userApiUrl = '/api/usuarios';
+const medApiUrl = '/api/medicamentos';
+let gastosChartInstance = null;
+let deleteId = null;
+let allUserMedicaments = []; // Armazena todos os medicamentos do usuário para filtragem no frontend
+
+// --- ELEMENTOS DO DOM ---
+const loginPage = document.getElementById('login-page');
+const registerPage = document.getElementById('register-page');
+const appContainer = document.getElementById('app-container');
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+const userSelect = document.getElementById('user-select');
+const loggedInUserNameEl = document.getElementById('logged-in-user-name');
+const logoutButton = document.getElementById('logout-button');
+const showRegisterLink = document.getElementById('show-register-link');
+const showLoginLink = document.getElementById('show-login-link');
+const navLinks = document.querySelectorAll('.nav-link');
+const mainPages = { 'management-page': document.getElementById('management-page'), 'dashboard-page': document.getElementById('dashboard-page') };
+const medForm = document.getElementById('medicamento-form');
+const formTitle = document.getElementById('form-title');
+const medLista = document.getElementById('medicamentos-lista');
+const medIdField = document.getElementById('medicamento-id');
+const cancelButton = document.getElementById('cancel-button');
+const custoTotalEl = document.getElementById('custo-total');
+const tipoTratamentoSelect = document.getElementById('tipoTratamento');
+const diasTratamentoContainer = document.getElementById('dias-tratamento-container');
+const diasTratamentoInput = document.getElementById('diasTratamento');
+const filtroNome = document.getElementById('filtro-nome');
+const filtroLab = document.getElementById('filtro-laboratorio');
+const filtroTipo = document.getElementById('filtro-tipo');
+const filtrarBtn = document.getElementById('filtrar-btn');
+const deleteModal = document.getElementById('delete-modal');
+const deleteModalBackdrop = document.getElementById('delete-modal-backdrop');
+const cancelDeleteBtn = document.getElementById('cancel-delete');
+const confirmDeleteBtn = document.getElementById('confirm-delete');
+
+// --- LÓGICA DE USUÁRIO ---
+const userSession = {
+    setId: (id) => localStorage.setItem('userId', id),
+    getId: () => localStorage.getItem('userId'),
+    setName: (name) => localStorage.setItem('userName', name),
+    getName: () => localStorage.getItem('userName'),
+    clear: () => { localStorage.removeItem('userId'); localStorage.removeItem('userName'); }
+};
+
+function showAuthPage(pageElement) {
+    loginPage.classList.add('hidden');
+    registerPage.classList.add('hidden');
+    appContainer.classList.add('hidden');
+    pageElement.classList.remove('hidden');
+}
+
+async function populateUserSelect() {
+    try {
+        const response = await fetch(userApiUrl);
+        const users = await response.json();
+        userSelect.innerHTML = '<option value="">Selecione...</option>';
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.username;
+            userSelect.appendChild(option);
+        });
+    } catch (error) { console.error("Erro ao carregar usuários:", error); }
+}
+
+showRegisterLink.addEventListener('click', (e) => { e.preventDefault(); showAuthPage(registerPage); });
+showLoginLink.addEventListener('click', (e) => { e.preventDefault(); populateUserSelect(); showAuthPage(loginPage); });
+
+loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const selectedUserId = userSelect.value;
+    if (!selectedUserId) { alert('Por favor, selecione um usuário.'); return; }
+    const selectedUserName = userSelect.options[userSelect.selectedIndex].text;
+    userSession.setId(selectedUserId);
+    userSession.setName(selectedUserName);
+    loggedInUserNameEl.textContent = selectedUserName;
+    showAuthPage(appContainer);
+    navigateTo('management-page');
+    getMedicamentos();
+});
+
+registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('register-username').value;
+    try {
+        const response = await fetch(`${userApiUrl}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username })
+        });
+        if (!response.ok) throw new Error(await response.text());
+        alert('Perfil criado com sucesso! Agora selecione seu nome na tela de login.');
+        populateUserSelect();
+        showAuthPage(loginPage);
+        registerForm.reset();
+    } catch (error) { alert(error.message); }
+});
+
+logoutButton.addEventListener('click', () => {
+    userSession.clear();
+    populateUserSelect();
+    showAuthPage(loginPage);
+});
+
+// --- NAVEGAÇÃO E LÓGICA PRINCIPAL ---
+function navigateTo(pageId) {
+    Object.values(mainPages).forEach(page => page.classList.add('hidden'));
+    mainPages[pageId].classList.remove('hidden');
+    if (pageId === 'dashboard-page') {
+        initializeDashboard();
+    }
+}
+navLinks.forEach(link => link.addEventListener('click', () => navigateTo(link.dataset.page)));
+filtrarBtn.addEventListener('click', () => renderChart());
+tipoTratamentoSelect.addEventListener('change', () => {
+    diasTratamentoContainer.classList.toggle('hidden', tipoTratamentoSelect.value !== 'Duração Definida');
+});
+
+// --- UTILIDADES ---
+const formatCurrency = value => (value === null || isNaN(value)) ? "R$ 0,00" : Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const formatDate = dateStr => dateStr ? new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A';
+
+// --- LÓGICA DE GERENCIAMENTO ---
+async function getMedicamentos() {
+    const userId = userSession.getId();
+    if (!userId) return;
+    try {
+        const response = await fetch(`${medApiUrl}?usuarioId=${userId}`);
+        const medicamentos = await response.json();
+        medLista.innerHTML = '';
+        let custoTotal = 0;
+        if (medicamentos.length === 0) {
+            medLista.innerHTML = '<p class="text-gray-500">Nenhum medicamento cadastrado para este perfil.</p>';
+        } else {
+            medicamentos.forEach(med => {
+                const valorTotalItem = (med.valorCaixa || 0) * (med.numeroCaixas || 1);
+                custoTotal += valorTotalItem;
+                const card = `<div class="border rounded-lg p-4 shadow-sm bg-white"><div class="flex justify-between items-start"><div><h3 class="text-xl font-bold text-emerald-700">${med.nome}</h3><p class="text-sm text-gray-500">${med.laboratorio || ''} - ${med.dosagem || ''}</p></div><div class="flex space-x-2"><button onclick="handleEdit(${med.id})" class="text-emerald-500 hover:text-emerald-700"><i class="fas fa-pencil-alt"></i></button><button onclick="handleDelete(${med.id})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash-alt"></i></button></div></div><div class="mt-4 border-t pt-4 grid grid-cols-2 md:grid-cols-4 gap-2 text-sm"><p><strong>Data Compra:</strong> ${formatDate(med.dataCompra)}</p><p><strong>Caixas:</strong> ${med.numeroCaixas || 'N/A'}</p><p><strong>Tratamento:</strong> ${med.duracaoTratamento || 'N/A'}</p><p class="text-base"><strong>Custo Total:</strong> <span class="font-bold text-green-700">${formatCurrency(valorTotalItem)}</span></p></div></div>`;
+                medLista.innerHTML += card;
+            });
+        }
+        custoTotalEl.textContent = formatCurrency(custoTotal);
+    } catch (error) { console.error('Falha:', error); }
+}
+
+medForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const userId = userSession.getId();
+    if (!userId) return;
+    const id = medIdField.value;
+    let duracaoFinal = tipoTratamentoSelect.value;
+    if (duracaoFinal === 'Duração Definida') duracaoFinal = `${diasTratamentoInput.value || 0} dias`;
+    const medicamento = {
+        nome: medForm.nome.value, laboratorio: medForm.laboratorio.value, dosagem: medForm.dosagem.value,
+        dataCompra: medForm.dataCompra.value || null,
+        numeroCaixas: medForm.numeroCaixas.value ? parseInt(medForm.numeroCaixas.value) : null,
+        valorCaixa: medForm.valorCaixa.value ? parseFloat(medForm.valorCaixa.value) : null,
+        duracaoTratamento: duracaoFinal,
+    };
+    const method = id ? 'PUT' : 'POST';
+    const url = id ? `${medApiUrl}/${id}?usuarioId=${userId}` : `${medApiUrl}?usuarioId=${userId}`;
+    try {
+        await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(medicamento) });
+        resetForm(); getMedicamentos();
+    } catch (error) { console.error('Falha ao salvar:', error); }
+});
+
+window.handleEdit = async id => {
+    const userId = userSession.getId();
+    if (!userId) return;
+    try {
+        const response = await fetch(`${medApiUrl}?usuarioId=${userId}`);
+        const meds = await response.json();
+        const med = meds.find(m => m.id === id);
+        if(!med) throw new Error("Medicamento não encontrado ou não pertence a este usuário");
+        medIdField.value = med.id; medForm.nome.value = med.nome; medForm.laboratorio.value = med.laboratorio;
+        medForm.dosagem.value = med.dosagem; medForm.dataCompra.value = med.dataCompra; medForm.numeroCaixas.value = med.numeroCaixas;
+        medForm.valorCaixa.value = med.valorCaixa;
+        const duracao = med.duracaoTratamento || '';
+        if (duracao.includes('dias')) {
+            tipoTratamentoSelect.value = 'Duração Definida';
+            diasTratamentoInput.value = parseInt(duracao.split(' ')[0]) || '';
+            diasTratamentoContainer.classList.remove('hidden');
+        } else {
+            tipoTratamentoSelect.value = duracao;
+            diasTratamentoContainer.classList.add('hidden');
+        }
+        formTitle.textContent = 'Editar Compra de Medicamento'; cancelButton.style.display = 'inline-block'; window.scrollTo(0, 0);
+    } catch (error) { console.error('Falha ao editar:', error); alert(error.message); }
+};
+
+function resetForm() { medForm.reset(); medIdField.value = ''; formTitle.textContent = 'Adicionar Compra de Medicamento'; cancelButton.style.display = 'none'; diasTratamentoContainer.classList.add('hidden'); }
+cancelButton.addEventListener('click', resetForm);
+
+// --- LÓGICA DO MODAL ---
+window.handleDelete = id => { deleteId = id; deleteModal.classList.remove('hidden'); deleteModalBackdrop.classList.remove('hidden'); };
+function closeDeleteModal() { deleteId = null; deleteModal.classList.add('hidden'); deleteModalBackdrop.classList.add('hidden'); }
+confirmDeleteBtn.addEventListener('click', async () => {
+    const userId = userSession.getId();
+    if (!deleteId || !userId) return;
+    try {
+        await fetch(`${medApiUrl}/${deleteId}?usuarioId=${userId}`, { method: 'DELETE' });
+        closeDeleteModal(); getMedicamentos();
+    } catch (error) { console.error('Falha ao excluir:', error); }
+});
+cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+deleteModalBackdrop.addEventListener('click', closeDeleteModal);
+
+// --- LÓGICA DO DASHBOARD ---
+async function initializeDashboard() {
+    const userId = userSession.getId();
+    if (!userId) return;
+    try {
+        const response = await fetch(`${medApiUrl}?usuarioId=${userId}`);
+        allUserMedicaments = await response.json();
+        updateDashboardFilters();
+        renderChart();
+    } catch (error) {
+        console.error("Erro ao inicializar dashboard:", error);
+    }
+}
+
+function updateDashboardFilters() {
+    let filteredMeds = [...allUserMedicaments];
+
+    const selectedNome = filtroNome.value;
+    const selectedLab = filtroLab.value;
+    const selectedTipo = filtroTipo.value;
+
+    // Aplica os filtros atuais para determinar as opções válidas para os outros filtros
+    if (selectedNome) {
+        filteredMeds = filteredMeds.filter(m => m.nome === selectedNome);
+    }
+    if (selectedLab) {
+        filteredMeds = filteredMeds.filter(m => m.laboratorio === selectedLab);
+    }
+    if (selectedTipo) {
+        if (selectedTipo === 'Duração Definida') {
+            filteredMeds = filteredMeds.filter(m => (m.duracaoTratamento || '').includes('dias'));
+        } else {
+            filteredMeds = filteredMeds.filter(m => m.duracaoTratamento === selectedTipo);
+        }
+    }
+
+    // Extrai opções únicas da lista JÁ FILTRADA
+    const nomesPossiveis = new Set(filteredMeds.map(m => m.nome));
+    const labsPossiveis = new Set(filteredMeds.filter(m => m.laboratorio).map(m => m.laboratorio));
+    const tiposPossiveis = new Set(filteredMeds.map(m => {
+        const duracao = m.duracaoTratamento || '';
+        if (duracao.includes('dias')) return 'Duração Definida';
+        if (duracao === 'Uso Contínuo') return 'Uso Contínuo';
+        if (duracao === 'Se Necessário / Sintomático') return 'Se Necessário';
+        return duracao;
+    }));
+
+    // Repopula os dropdowns com as opções válidas
+    repopulateSelect(filtroNome, nomesPossiveis, selectedNome);
+    repopulateSelect(filtroLab, labsPossiveis, selectedLab);
+    
+    // Para o filtro de tipo, mantemos as opções estáticas mas poderíamos desabilitar as inválidas no futuro
+    // Por simplicidade, vamos apenas garantir que a seleção atual seja mantida se ainda for válida.
+    if (!tiposPossiveis.has(selectedTipo)) {
+        // Se a seleção atual não é mais válida, reseta para "Todos"
+        // (Opcional, mas melhora a experiência)
+        // filtroTipo.value = "";
+    }
+}
+
+function repopulateSelect(selectElement, optionsSet, selectedValue) {
+    selectElement.innerHTML = '<option value="">Todos</option>';
+    optionsSet.forEach(optionValue => {
+        const option = document.createElement('option');
+        option.value = optionValue;
+        option.textContent = optionValue;
+        selectElement.appendChild(option);
+    });
+    selectElement.value = selectedValue; // Restaura a seleção anterior
+}
+
+// Adiciona os event listeners que atualizam os outros filtros
+filtroNome.addEventListener('change', updateDashboardFilters);
+filtroLab.addEventListener('change', updateDashboardFilters);
+filtroTipo.addEventListener('change', updateDashboardFilters);
+
+
+async function renderChart() {
+    const userId = userSession.getId();
+    if (!userId) return;
+    const params = new URLSearchParams({ usuarioId: userId });
+    if (filtroNome.value) params.append('nome', filtroNome.value);
+    if (filtroLab.value) params.append('laboratorio', filtroLab.value);
+    if (filtroTipo.value) params.append('tipoTratamento', filtroTipo.value);
+    try {
+        const response = await fetch(`${medApiUrl}?${params.toString()}`);
+        const medicamentos = await response.json();
+        const gastosPorTipo = {};
+        medicamentos.forEach(med => {
+            let tipo = med.duracaoTratamento || 'Não especificado';
+            if (tipo.includes('dias')) tipo = 'Duração Definida';
+            if (!gastosPorTipo[tipo]) gastosPorTipo[tipo] = 0;
+            gastosPorTipo[tipo] += (med.valorCaixa || 0) * (med.numeroCaixas || 1);
+        });
+        const labels = Object.keys(gastosPorTipo);
+        const data = Object.values(gastosPorTipo);
+        const treatmentColorMap = { 'Uso Contínuo': 'rgba(16, 185, 129, 0.7)', 'Duração Definida': 'rgba(59, 130, 246, 0.7)', 'Se Necessário': 'rgba(245, 158, 11, 0.7)', 'Não especificado': 'rgba(107, 114, 128, 0.7)' };
+        const backgroundColors = labels.map(label => treatmentColorMap[label] || treatmentColorMap['Não especificado']);
+        const ctx = document.getElementById('gastosChart').getContext('2d');
+        if (gastosChartInstance) gastosChartInstance.destroy();
+        gastosChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ label: 'Custo Total por Tipo de Tratamento (R$)', data: data, backgroundColor: backgroundColors, borderColor: backgroundColors.map(color => color.replace('0.7', '1')), borderWidth: 1 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: value => 'R$ ' + value } } } }
+        });
+    } catch (error) { console.error("Erro ao renderizar o gráfico:", error); }
+}
+
+// --- INICIALIZAÇÃO ---
+document.addEventListener('DOMContentLoaded', () => {
+    if (userSession.getId()) {
+        loggedInUserNameEl.textContent = userSession.getName();
+        showAuthPage(appContainer);
+        navigateTo('management-page');
+        getMedicamentos();
+    } else {
+        populateUserSelect();
+        showAuthPage(loginPage);
+    }
+});
+</script>
+</body>
+</html>
